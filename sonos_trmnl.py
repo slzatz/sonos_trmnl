@@ -10,7 +10,7 @@ import sys
 import wikipedia
 from bs4 import BeautifulSoup
 import requests
-from config import speaker 
+from config import speaker, server_url, access_token 
 from get_lyrics import get_lyrics
 from soco.discovery import by_name
 
@@ -152,6 +152,43 @@ if __name__ == "__main__":
                     likely_images = filter_wiki_images(artist, all_rows)
                     #print("all_rows", all_rows, "all_rows")
 
+                
+                # Generate HTML for e-ink display
+                from string import Template
+                with open('/home/slzatz/sonos_trmnl/template.html', 'r') as f:
+                    html_template = Template(f.read())
+                
+                # Limit lyrics to fit 800x480 display (approximately 15-20 lines)
+                lyrics_lines = zz[:20] if len(zz) > 20 else zz
+                display_lyrics = '\n'.join(lyrics_lines)
+                
+                # Populate template with current track info
+                html_content = html_template.substitute(
+                    artist=artist or "Unknown Artist",
+                    title=title or "Unknown Title", 
+                    lyrics=display_lyrics
+                )
+                
+                # Send to e-ink display API
+                api_url = server_url+"/api/screens"
+                headers = {
+                        'Access-Token': access_token,
+                    'Content-Type': 'application/json'
+                }
+                payload = {
+                    "image": {
+                        "content": html_content,
+                        "file_name": "sonos_display.png"
+                    }
+                }
+                
+                try:
+                    response = requests.post(api_url, headers=headers, json=payload, verify=False)
+                    print(f"API Response: {response.status_code}")
+                    if response.status_code != 200:
+                        print(f"Error: {response.text}")
+                except Exception as e:
+                    print(f"Failed to send to display: {e}")
                 
                 print(f"Title: {title}, Artist: {artist}, Duration: {duration}, Lyrics lines: {line_count}, Images found: {len(all_images)}")
             time.sleep(.01) 
