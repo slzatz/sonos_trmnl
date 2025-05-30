@@ -82,12 +82,48 @@ if __name__ == "__main__":
             with open('/home/slzatz/sonos_trmnl/template.html', 'r') as f:
                 html_template = Template(f.read())
             
-            # Limit lyrics to fit 800x480 display (approximately 15-20 lines)
-            lyrics_lines = lyric_lines[:20] if len(lyric_lines) > 20 else lyric_lines
+            # Dynamic font sizing based on lyric count
+            SCREEN_HEIGHT = 480  # Total screen height in pixels
+            BODY_PADDING = 12    # Top + bottom padding (6px each)
+            HEADER_HEIGHT = 28   # Approximate header space (font + padding + border + margin)
+            BASE_LYRICS_FONT_SIZE = 13  # Baseline font size in pixels
+            LYRICS_LINE_HEIGHT = 1.3  # Line height multiplier
+            COLUMN_COUNT = 2     # Number of columns for lyrics
+            MIN_FONT_SIZE = 11   # Minimum readable font size
+            MAX_FONT_SIZE = 18   # Maximum font size before it looks too large
+            
+            available_height = SCREEN_HEIGHT - BODY_PADDING - HEADER_HEIGHT
+            actual_lyric_count = len(lyric_lines)
+            
+            # Calculate optimal font size based on actual lyric count
+            if actual_lyric_count > 0:
+                # Calculate what font size would best fill the available space
+                target_pixels_per_line = available_height / (actual_lyric_count / COLUMN_COUNT)
+                optimal_font_size = int(target_pixels_per_line / LYRICS_LINE_HEIGHT)
+                
+                # Constrain font size within reasonable bounds
+                lyrics_font_size = max(MIN_FONT_SIZE, min(MAX_FONT_SIZE, optimal_font_size))
+                
+                # If we're at max font size, recalculate how many lines we can actually display
+                pixels_per_line = lyrics_font_size * LYRICS_LINE_HEIGHT
+                lines_per_column = int(available_height / pixels_per_line)
+                max_lyrics_lines = lines_per_column * COLUMN_COUNT
+                
+                # Use either all lyrics or maximum displayable lines
+                lyrics_lines = lyric_lines[:max_lyrics_lines] if len(lyric_lines) > max_lyrics_lines else lyric_lines
+            else:
+                lyrics_font_size = BASE_LYRICS_FONT_SIZE
+                lyrics_lines = lyric_lines
+            
             display_lyrics = '\n'.join(lyrics_lines)
             
+            # Update template with dynamic font size
+            template_content = html_template.template
+            template_content = template_content.replace('font-size:13px', f'font-size:{lyrics_font_size}px')
+            updated_template = Template(template_content)
+            
             # Populate template with current track info
-            html_content = html_template.substitute(
+            html_content = updated_template.substitute(
                 artist=artist or "Unknown Artist",
                 title=title or "Unknown Title", 
                 lyrics=display_lyrics
