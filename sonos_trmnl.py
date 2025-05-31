@@ -6,7 +6,7 @@ Sends sonos information to trmnl devices plus images and lyrics"
 import time
 import sys
 import requests
-from config import speaker, server_url, access_token 
+from config import speaker, terminus_api_url, access_token, trmnl_id 
 from get_lyrics import get_lyrics
 from soco.discovery import by_name
 
@@ -130,7 +130,7 @@ if __name__ == "__main__":
             )
             
             # Send to e-ink display API
-            api_url = server_url+"/api/screens"
+            #api_url = server_url+"/api/screens"
             headers = {
                     'Access-Token': access_token,
                     'Content-Type': 'application/json'
@@ -143,7 +143,7 @@ if __name__ == "__main__":
             }
             
             try:
-                response = requests.post(api_url, headers=headers, json=payload, verify=False)
+                response = requests.post(terminus_api_url+"/api/screens", headers=headers, json=payload, verify=False)
                 print(f"API Response: {response.status_code}")
                 if response.status_code != 200:
                     print(f"Error: {response.text}")
