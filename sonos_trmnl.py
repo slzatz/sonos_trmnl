@@ -1,7 +1,7 @@
 #!/home/slzatz/sonos_trmnl/bin/python
 
 '''
-Sends sonos information to trmnl devices plus images and lyrics"
+Sends artist and track plus lyrics to trmnl devices"
 '''
 import time
 import sys
@@ -83,22 +83,21 @@ if __name__ == "__main__":
                 html_template = Template(f.read())
             
             # Dynamic font sizing based on lyric count
-            SCREEN_HEIGHT = 480  # Total screen height in pixels
+            SCREEN_HEIGHT = 1200  # Total screen height in pixels
             BODY_PADDING = 12    # Top + bottom padding (6px each)
             HEADER_HEIGHT = 28   # Approximate header space (font + padding + border + margin)
-            BASE_LYRICS_FONT_SIZE = 13  # Baseline font size in pixels
+            BASE_LYRICS_FONT_SIZE = 18  # Baseline font size in pixels
             LYRICS_LINE_HEIGHT = 1.3  # Line height multiplier
             COLUMN_COUNT = 2     # Number of columns for lyrics
             MIN_FONT_SIZE = 11   # Minimum readable font size
-            MAX_FONT_SIZE = 18   # Maximum font size before it looks too large
+            MAX_FONT_SIZE = 24   # Maximum font size before it looks too large
             
             available_height = SCREEN_HEIGHT - BODY_PADDING - HEADER_HEIGHT
-            actual_lyric_count = len(lyric_lines)
             
             # Calculate optimal font size based on actual lyric count
-            if actual_lyric_count > 0:
+            if line_count > 0:
                 # Calculate what font size would best fill the available space
-                target_pixels_per_line = available_height / (actual_lyric_count / COLUMN_COUNT)
+                target_pixels_per_line = available_height / (line_count / COLUMN_COUNT)
                 optimal_font_size = int(target_pixels_per_line / LYRICS_LINE_HEIGHT)
                 
                 # Constrain font size within reasonable bounds
